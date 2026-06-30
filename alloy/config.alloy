@@ -1,10 +1,11 @@
+
+
 logging {
   level  = "info"
   format = "logfmt"
 }
 
 otelcol.receiver.otlp "default" {
-
   grpc {
     endpoint = "0.0.0.0:4317"
   }
@@ -14,8 +15,24 @@ otelcol.receiver.otlp "default" {
   }
 
   output {
-    metrics = []
+    metrics = [otelcol.processor.batch.default.input]
     logs    = []
     traces  = []
+  }
+}
+
+otelcol.processor.batch "default" {
+
+  output {
+    metrics = [otelcol.exporter.otlphttp.prometheus.input]
+    logs    = []
+    traces  = []
+  }
+}
+
+otelcol.exporter.otlphttp "prometheus" {
+
+  client {
+    endpoint = "http://prometheus:9090/api/v1/otlp"
   }
 }

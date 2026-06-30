@@ -63,10 +63,15 @@ services:
       - "${PROMETHEUS_PORT}:9090"
 
     command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--storage.tsdb.retention.time=30d"
-      - "--web.enable-lifecycle"
+      - --web.enable-otlp-receiver
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-lifecycle
+      # - "--config.file=/etc/prometheus/prometheus.yml"
+      # - "--storage.tsdb.path=/prometheus"
+      # - "--storage.tsdb.retention.time=30d"
+      # - "--web.enable-lifecycle"
 
     volumes:
       - prometheus-data:/prometheus
@@ -122,6 +127,7 @@ services:
 
     volumes:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      # - ./alloy:/etc/alloy:ro
 
       - /var/log:/var/log:ro
       - /proc:/host/proc:ro
@@ -131,6 +137,9 @@ services:
 
     networks:
       - obs-net
+    
+    depends_on:
+      - prometheus
 
     security_opt:
       - no-new-privileges:true
