@@ -68,10 +68,6 @@ services:
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=30d
       - --web.enable-lifecycle
-      # - "--config.file=/etc/prometheus/prometheus.yml"
-      # - "--storage.tsdb.path=/prometheus"
-      # - "--storage.tsdb.retention.time=30d"
-      # - "--web.enable-lifecycle"
 
     volumes:
       - prometheus-data:/prometheus
@@ -129,7 +125,9 @@ services:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
       # - ./alloy:/etc/alloy:ro
 
-      - /var/log:/var/log:ro
+      # - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
 
@@ -157,3 +155,51 @@ services:
       retries: 3
 
     mem_limit: 512m
+
+
+  loki:
+
+    image: grafana/loki:${LOKI_VERSION}
+
+    hostname: loki
+
+    restart: unless-stopped
+
+    env_file:
+      - ./.env
+
+    ports:
+      - "${LOKI_PORT}:3100"
+
+    command:
+      - "-config.file=/etc/loki/config.yaml"
+
+    volumes:
+      - loki-data:/loki
+      - ./loki/config.yaml:/etc/loki/config.yaml:ro
+
+    networks:
+      - obs-net
+
+    depends_on:
+      - alloy
+      - prometheus
+      - grafana
+    
+    security_opt:
+      - no-new-privileges:true
+
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3100/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+    mem_limit: 1g
+    cpus: 1

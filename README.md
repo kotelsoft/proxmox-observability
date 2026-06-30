@@ -17,15 +17,15 @@ TBD
 
 ✅ Grafana
 ✅ Prometheus
-✅  Alloy
-➜ Loki
-➜ Exporters
-➜ Збір логів
-➜ OTEL
-➜ Proxmox
-➜ Ceph
-➜ Alerting
-➜ Dashboards
+✅ Alloy
+✅ OTLP від Proxmox → Alloy → Prometheus
+✅ Loki
+⏳ Exporters
+⏳ Збір логів
+⏳ Ceph
+⏳ Alerting
+⏳ Dashboards
+
 
 | Service | Port | Status | Description |
 |---------|------|--------|-------------|

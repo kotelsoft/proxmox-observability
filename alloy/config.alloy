@@ -1,9 +1,9 @@
-
-
 logging {
   level  = "info"
   format = "logfmt"
 }
+
+
 
 otelcol.receiver.otlp "default" {
   grpc {
@@ -21,8 +21,9 @@ otelcol.receiver.otlp "default" {
   }
 }
 
-otelcol.processor.batch "default" {
 
+
+otelcol.processor.batch "default" {
   output {
     metrics = [otelcol.exporter.otlphttp.prometheus.input]
     logs    = []
@@ -31,8 +32,61 @@ otelcol.processor.batch "default" {
 }
 
 otelcol.exporter.otlphttp "prometheus" {
-
   client {
     endpoint = "http://prometheus:9090/api/v1/otlp"
   }
 }
+
+
+// 1. Шукаємо всі запущені Docker контейнери через Docker Socket
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// 2. Фільтруємо/додаємо мітки та формуємо правильний шлях до логів
+discovery.relabel "docker_logs" {
+  targets = discovery.docker.containers.targets
+
+  // Створюємо правильний шлях до лог-файлу Docker всередині контейнера Alloy
+  rule {
+    source_labels = ["__meta_docker_container_id"]
+    target_label  = "__path__"
+    replacement = "/var/lib/docker/containers/$1/$1-json.log"
+  }
+
+  // Додаємо ім'я контейнера як мітку
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    replacement   = "$1"
+    target_label  = "container"
+  }
+  // Додаємо ім'я проєкту як мітку
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label  = "project"
+  }
+  // Додаємо ім'я сервісу як мітку
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+}
+
+
+// 3. Читаємо лог-файли (Тут виправлено помилку синтаксису)
+loki.source.file "docker" {
+  targets    = discovery.relabel.docker_logs.output
+  forward_to = [loki.write.loki_service.receiver]
+}
+
+// 4. Відправляємо в Loki
+loki.write "loki_service" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+
+
+
