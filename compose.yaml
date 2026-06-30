@@ -50,6 +50,7 @@ services:
     mem_limit: 1g
     cpus: 1
 
+
   prometheus:
 
     image: prom/prometheus:${PROMETHEUS_VERSION}
@@ -96,3 +97,54 @@ services:
 
     mem_limit: 1g
     cpus: 1
+
+
+  alloy:
+
+    image: grafana/alloy:${ALLOY_VERSION}
+
+    hostname: alloy
+
+    restart: unless-stopped
+
+    env_file:
+      - ./.env
+
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - /etc/alloy/config.alloy
+
+    ports:
+      - "${OTLP_HTTP_PORT}:4318"
+      - "${OTLP_GRPC_PORT}:4317"
+      - "${ALLOY_UI_PORT}:12345"
+
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+
+      - /var/log:/var/log:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    networks:
+      - obs-net
+
+    security_opt:
+      - no-new-privileges:true
+
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:12345/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+    mem_limit: 512m

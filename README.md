@@ -15,13 +15,24 @@ TBD
 
 ## Roadmap
 
+✅ Grafana
+✅ Prometheus
+✅  Alloy
+➜ Loki
+➜ Exporters
+➜ Збір логів
+➜ OTEL
+➜ Proxmox
+➜ Ceph
+➜ Alerting
+➜ Dashboards
 
 | Service | Port | Status | Description |
 |---------|------|--------|-------------|
 | Grafana | 3000 | testing | Visualization |
 | Prometheus | 9090 | testing | Metrics |
 | Loki | 3100 | Planned | Logs |
-| Alloy | 4317/4318 | Planned | OTLP Collector |
+| Alloy | 4317/4318 | testing | OTLP Collector |
 
 ## Start
 ```bash
