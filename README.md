@@ -19,7 +19,9 @@ TBD
 ✅ Prometheus
 ✅ Alloy
 ✅ OTLP від Proxmox → Alloy → Prometheus
+✅ Docker logs
 ✅ Loki
+
 ⏳ Exporters
 ⏳ Збір логів
 ⏳ Ceph
