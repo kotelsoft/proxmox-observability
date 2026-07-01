@@ -1,0 +1,61 @@
+// ==========================================
+// Proxmox → Central Loki
+// ==========================================
+
+// Правила перетворення внутрішніх полів journald у labels Loki
+loki.relabel "journal_labels" {
+  forward_to = []
+
+  // Найвищий пріоритет — systemd unit
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "(.+)"
+    target_label  = "service"
+  }
+
+  // Якщо systemd unit немає — syslog identifier
+  rule {
+    source_labels = ["__journal_syslog_identifier"]
+    regex         = "(.+)"
+    target_label  = "service"
+  }
+
+  // Якщо й його немає — ім'я процесу
+  rule {
+    source_labels = ["__journal__comm"]
+    regex         = "(.+)"
+    target_label  = "service"
+  }
+
+  // Рівень логування
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+
+  // Ім'я ноди
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "node"
+  }
+}
+
+// Читаємо journald
+loki.source.journal "journal" {
+  max_age = "6h"
+
+  labels = {
+    job = "proxmox-system",
+  }
+
+  relabel_rules = loki.relabel.journal_labels.rules
+
+  forward_to = [loki.write.loki.receiver]
+}
+
+// Центральний Loki ()
+loki.write "loki" {
+  endpoint {
+    url = "http://obs-01.home.lan:3100/loki/api/v1/push"
+  }
+}
