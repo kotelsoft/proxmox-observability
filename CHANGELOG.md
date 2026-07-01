@@ -7,6 +7,18 @@ v0.6.0 — Alerting
 v1.0.0 — First stable GitHub release
 
 ### Added
+- Added RFC5424 syslog receiver for network devices.
+- Added support for TCP and UDP syslog transport.
+- Added syslog metadata relabeling (host, facility, severity, sender IP, process ID).
+- Added vendor-specific OPNsense processing pipeline.
+- Added initial OPNsense filterlog parser extracting:
+  - interface
+  - action
+  - direction
+  - IP version
+  - protocol
+
+### Added
 - Syslog ingestion via Alloy (RFC5424)
 - TCP and UDP syslog listeners
 - Environment-based port configuration for syslog

@@ -3,6 +3,21 @@
 Infrastructure monitoring for the home datacenter.
 
 ## Architecture
+Network device
+        │
+RFC5424 Syslog
+        │
+loki.source.syslog
+        │
+loki.relabel
+        │
+loki.process.<vendor>
+        │
+loki.write
+        │
+    Loki
+
+
 
 ### obs-01
 
@@ -93,6 +108,12 @@ Linux VM	—	✅	Done
 OPNsense	—	⏳	Planned
 Home Assistant	⏳	⏳	Planned
 
+## Supported network devices
+
+| Vendor | Status | Notes |
+|---------|--------|-------|
+| OPNsense | ✅ Initial | RFC5424 + filterlog parser |
+
 ## Syslog Ingestion (OPNsense / network devices)
 
 Alloy exposes RFC5424 syslog receiver on:
@@ -100,9 +121,24 @@ Alloy exposes RFC5424 syslog receiver on:
 - TCP: `${SYSLOG_TCP_PORT}`
 - UDP: `${SYSLOG_UDP_PORT}`
 
-Example OPNsense configuration:
+Current capabilities:
+- TCP and UDP syslog
+- RFC5424 metadata extraction
+- Vendor-specific processing pipelines
+- Initial OPNsense filterlog parsing
 
+Supported vendors:
+- OPNsense (initial support)
+
+Example OPNsense configuration:
 - Remote syslog server: `obs-01.home.lan`
 - Port: `1514`
 - Protocol: TCP or UDP
 - Format: RFC5424
+
+
+
+
+
+
+

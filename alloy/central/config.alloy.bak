@@ -86,6 +86,8 @@ loki.source.file "docker" {
 
 loki.relabel "syslog" {
 
+  
+
   rule {
     source_labels = ["__syslog_message_hostname"]
     target_label  = "host"
@@ -135,87 +137,20 @@ loki.relabel "syslog" {
     target_label  = "msgid"
   }
 
-  //forward_to = [loki.write.loki_service.receiver]
-  forward_to = []
+  forward_to = [loki.write.loki_service.receiver]
 }
 
 loki.process "opnsense_firewall" {
 
   forward_to = [loki.write.loki_service.receiver]
 
-  stage.match {
-    selector = "{vendor=\"opnsense\",service=\"firewall\"}"
-
-    stage.regex {
-      expression = string.join([
-        "^(?P<rule>[^,]*)",
-        "(?P<subrule>[^,]*)",
-        "(?P<anchor>[^,]*)",
-        "(?P<tracker>[^,]*)",
-        "(?P<interface>[^,]*)",
-        "(?P<reason>[^,]*)",
-        "(?P<action>[^,]*)",
-        "(?P<direction>[^,]*)",
-        "(?P<ip_version>[^,]*)",
-        "(?P<remainder>.*)$",
-      ], ",")
-    }
-    
-
-    stage.labels {
-      values = {
-        interface  = "",
-        action     = "",
-        direction  = "",
-        ip_version = "",
-      }
-    }
-
-    stage.structured_metadata {
-      values = {
-        rule     = "",
-        tracker  = "",
-        reason   = "",
-      }
-    }
+  stage.regex {
+    expression = "^(?P<first_field>[^,]+)"
   }
 
-  stage.match {
-    selector = "{ip_version=\"4\"}"
-
-    stage.regex {
-      source = "remainder"
-
-      expression = string.join([
-        "^(?P<tos>[^,]*)",
-        "(?P<ecn>[^,]*)",
-        "(?P<ttl>[^,]*)",
-        "(?P<packet_id>[^,]*)",
-        "(?P<offset>[^,]*)",
-        "(?P<flags>[^,]*)",
-        "(?P<proto_id>[^,]*)",
-        "(?P<protocol>[^,]*)",
-        "(?P<length>[^,]*)",
-        "(?P<src_ip>[^,]*)",
-        "(?P<dst_ip>[^,]*)",
-        "(?P<ip_remainder>.*)$",
-      ], ",")
-    }
-
-    stage.labels {
-      values = {
-        protocol = "",
-      }
-    }
-
-    stage.structured_metadata {
-      values = {
-        src_ip   = "",
-        dst_ip   = "",
-        ttl      = "",
-        length   = "",
-        proto_id = "",
-      }
+  stage.labels {
+    values = {
+      first_field = "",
     }
   }
 }
