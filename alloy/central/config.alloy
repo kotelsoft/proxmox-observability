@@ -80,7 +80,93 @@ loki.source.file "docker" {
   forward_to = [loki.write.loki_service.receiver]
 }
 
-// 4. Відправляємо в Loki
+// ==========================================
+// Preserve syslog metadata 
+// ==========================================
+
+loki.relabel "syslog" {
+
+  
+
+  rule {
+    source_labels = ["__syslog_message_hostname"]
+    target_label  = "host"
+  }
+
+  rule {
+    source_labels = ["__syslog_message_app_name"]
+    target_label  = "service"
+  }
+
+  rule {
+    source_labels = ["__syslog_message_proc_id"]
+    target_label  = "proc_id"
+  }
+
+  rule {
+    source_labels = ["__syslog_connection_ip_address"]
+    target_label  = "sender_ip"
+  }
+
+  rule {
+    source_labels = ["__syslog_connection_hostname"]
+    target_label  = "sender"
+  }
+
+  rule {
+    source_labels = ["__syslog_message_severity"]
+    target_label  = "severity"
+  }
+
+  rule {
+    source_labels = ["__syslog_message_facility"]
+    target_label  = "facility"
+  }
+
+  rule {
+    source_labels = ["__syslog_message_msg_id"]
+    target_label  = "msgid"
+  }
+
+  forward_to = [loki.write.loki_service.receiver]
+ 
+}
+
+// ==========================================
+// Syslog receiver
+// ==========================================
+
+loki.source.syslog "syslog" {
+  listener {
+    address = "0.0.0.0:1514"
+    protocol = "tcp"
+
+    labels = {
+      source    = "syslog",
+      transport = "tcp",
+    }
+
+    syslog_format = "rfc5424"
+  }
+
+  listener {
+    address = "0.0.0.0:1514"
+    protocol = "udp"
+
+    labels = {
+      source    = "syslog",
+      transport = "udp",
+    }
+
+    syslog_format = "rfc5424"
+  }
+
+  relabel_rules = loki.relabel.syslog.rules
+
+  forward_to = [loki.write.loki_service.receiver]
+}
+
+//  Відправляємо в Loki
 loki.write "loki_service" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"

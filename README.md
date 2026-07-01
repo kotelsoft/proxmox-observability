@@ -55,16 +55,54 @@ TBD
 ✅ Loki
 
 ⏳ Exporters
-⏳ Збір логів
 ⏳ Ceph
 ⏳ Alerting
 ⏳ Dashboards
 
+v0.4.0
+✅ Proxmox
+✅ Docker
+✅ Linux VM
+✅ GitHub documentation
 
-| Service | Port | Status | Description |
-|---------|------|--------|-------------|
-| Grafana | 3000 | testing | Visualization |
-| Prometheus | 9090 | testing | Metrics |
-| Loki | 3100 | testing | Logs |
-| Alloy | 4317/4318 | testing | OTLP Collector |
+↓
 
+v0.5.0
+✅ OPNsense
+✅ Home Assistant
+
+↓
+
+v0.6.0
+✅ Dashboards
+✅ Alerting
+✅ Recording Rules
+
+↓
+
+v1.0.0
+Stable Home Lab Observability Platform
+
+
+# Inventory
+
+Source	Metrics	Logs	Status
+Proxmox	✅	✅	Done
+Docker	—	✅	Done
+Linux VM	—	✅	Done
+OPNsense	—	⏳	Planned
+Home Assistant	⏳	⏳	Planned
+
+## Syslog Ingestion (OPNsense / network devices)
+
+Alloy exposes RFC5424 syslog receiver on:
+
+- TCP: `${SYSLOG_TCP_PORT}`
+- UDP: `${SYSLOG_UDP_PORT}`
+
+Example OPNsense configuration:
+
+- Remote syslog server: `obs-01.home.lan`
+- Port: `1514`
+- Protocol: TCP or UDP
+- Format: RFC5424

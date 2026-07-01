@@ -1,0 +1,82 @@
+// ==========================================
+// Generic Linux (VM/CT) → Central Loki
+// ==========================================
+//
+// Supported:
+// - Debian
+// - Ubuntu
+// - Rocky Linux
+// - AlmaLinux
+// - Fedora
+// - Other systemd-based distributions
+//
+
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// -----------------------------------------------------------------------------
+// Convert journald metadata into Loki labels
+// -----------------------------------------------------------------------------
+loki.relabel "journal_labels" {
+  forward_to = []
+
+  // Highest priority: systemd unit
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "(.+)"
+    target_label  = "service"
+  }
+
+  // Fallback: syslog identifier
+  rule {
+    source_labels = ["__journal_syslog_identifier"]
+    regex         = "(.+)"
+    target_label  = "service"
+  }
+
+  // Final fallback: process name
+  rule {
+    source_labels = ["__journal__comm"]
+    regex         = "(.+)"
+    target_label  = "service"
+  }
+
+  // Log level
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+
+  // Hostname
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "node"
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Read systemd journal
+// -----------------------------------------------------------------------------
+loki.source.journal "journal" {
+  max_age = "6h"
+
+  labels = {
+    job      = "linux-system",
+    platform = "linux",
+  }
+
+  relabel_rules = loki.relabel.journal_labels.rules
+
+  forward_to = [loki.write.loki.receiver]
+}
+
+// -----------------------------------------------------------------------------
+// Send logs to the central Loki instance
+// -----------------------------------------------------------------------------
+loki.write "loki" {
+  endpoint {
+    url = "http://obs-01.home.lan:3100/loki/api/v1/push"
+  }
+}

@@ -121,8 +121,12 @@ services:
       - "${OTLP_GRPC_PORT}:4317"
       - "${ALLOY_UI_PORT}:12345"
 
+        # Syslog
+      - "${SYSLOG_TCP_PORT}:1514/tcp"
+      - "${SYSLOG_UDP_PORT}:1514/udp"
+
     volumes:
-      - ./alloy/docker/config.alloy:/etc/alloy/config.alloy:ro
+      - ./alloy/central/config.alloy:/etc/alloy/config.alloy:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
