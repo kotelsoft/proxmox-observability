@@ -218,6 +218,21 @@ loki.process "opnsense_firewall" {
       }
     }
   }
+  stage.match {
+    selector = "{protocol=~\"tcp|udp\"}"
+
+    stage.regex {
+      source = "ip_remainder"
+      expression = "^(?P<src_port>[^,]*),(?P<dst_port>[^,]*),"
+    }
+
+    stage.structured_metadata {
+      values = {
+        src_port = "",
+        dst_port = "",
+      }
+    }
+  }
 }
 
 // ==========================================
