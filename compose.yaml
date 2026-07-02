@@ -113,6 +113,7 @@ services:
 
     command:
       - run
+      - --stability.level=experimental # Enable experimental features (raw syslog, etc.)
       - --server.http.listen-addr=0.0.0.0:12345
       - /etc/alloy/config.alloy
 
@@ -124,6 +125,7 @@ services:
         # Syslog
       - "${SYSLOG_TCP_PORT}:1514/tcp"
       - "${SYSLOG_UDP_PORT}:1514/udp"
+      - "${SYSLOG_OMADA_UDP_PORT}:1515/udp"
 
     volumes:
       - ./alloy/central/config.alloy:/etc/alloy/config.alloy:ro

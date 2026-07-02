@@ -136,7 +136,34 @@ Example OPNsense configuration:
 - Protocol: TCP or UDP
 - Format: RFC5424
 
+## Syslog ingestion
 
+The observability stack supports multiple syslog pipelines using Grafana Alloy.
+
+### OPNsense
+
+- RFC5424
+- TCP/UDP
+- Native Alloy syslog receiver
+- Firewall (`filterlog`) parsing
+- Structured metadata extraction
+- Timestamp preserved from the device
+
+### TP-Link Omada
+
+- Raw syslog pipeline (`syslog_format = "raw"`)
+- Requires Alloy experimental mode (`--stability.level=experimental`)
+- Native header parsing
+- Timestamp normalization to RFC3339
+- Device timestamp preserved
+- Login/Logout event parsing
+- Structured metadata extraction
+
+Future work:
+- Link Up/Down events
+- STP events
+- PoE events
+- Configuration changes
 
 
 

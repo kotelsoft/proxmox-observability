@@ -269,6 +269,93 @@ loki.source.syslog "syslog" {
   //forward_to = [loki.write.loki_service.receiver]
   forward_to = [loki.process.opnsense_firewall.receiver]
 }
+loki.source.syslog "omada_raw" {
+  listener {
+    address = "0.0.0.0:1515"
+    protocol = "udp"
+    syslog_format = "raw"
+
+    labels = {
+      source = "omada_raw",
+    }
+  }
+
+  forward_to = [loki.process.omada_syslog.receiver]
+}
+
+loki.process "omada_syslog" {
+
+  forward_to = [loki.write.loki_service.receiver]
+
+  stage.regex {
+    expression = "^(?P<version>\\d+)\\s+(?P<timestamp>\\S+)\\s+(?P<host>\\S+)\\s+(?P<service>\\S+)\\s+(?P<proc_id>\\S+)\\s+-\\s+-\\s+(?P<message>.*)$"
+  }
+
+  stage.labels {
+    values = {
+      host    = "",
+      service = "",
+    }
+  }
+
+  stage.structured_metadata {
+    values = {
+      version   = "",
+      timestamp = "",
+      proc_id   = "",
+    }
+  }
+
+  stage.template {
+    source   = "timestamp"
+    template = "{{ .Value }}+03:00"
+  }
+  
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339"
+  }
+
+  stage.match { 
+    selector = "{host=\"SG3210\"}"
+
+    stage.regex { 
+      source = "message" 
+      expression = "^(?P<event>Login|Logout) the (?P<method>\\w+) by (?P<user>\\S+) on \\w+ \\((?P<client_ip>[^)]+)\\)\\.$" } 
+    
+    stage.template { 
+      source = "event" 
+      template = "{{ ToLower .Value }}" 
+    } 
+
+    stage.labels { 
+      values = { event = "", } 
+    } 
+
+    stage.structured_metadata { 
+      values = { 
+        user = "", 
+        method = "", 
+        client_ip = "", 
+      } 
+    } 
+  }
+  stage.template {
+    source   = "severity"
+    template = "informational"
+  }
+  
+  stage.labels {
+    values = {
+      severity = "",
+    }
+  }
+  
+  stage.output {
+    source = "message"
+  }
+
+}
 
 //  Відправляємо в Loki
 loki.write "loki_service" {

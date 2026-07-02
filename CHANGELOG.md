@@ -6,6 +6,19 @@ v0.5.0 — Dashboards
 v0.6.0 — Alerting
 v1.0.0 — First stable GitHub release
 
+## [Unreleased]
+
+### Added
+
+- Native OPNsense RFC5424 syslog ingestion.
+- OPNsense filterlog parser.
+- Extraction of firewall metadata (interface, action, direction, protocol, IP metadata).
+- TP-Link Omada raw syslog listener using Alloy experimental `syslog_format = "raw"`.
+- Omada syslog header parser.
+- RFC3339 timestamp normalization for Omada logs.
+- Login/Logout event parser for Omada devices.
+- Structured metadata extraction for Omada authentication events.
+
 ### Added
 - Added RFC5424 syslog receiver for network devices.
 - Added support for TCP and UDP syslog transport.
